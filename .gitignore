@@ -26,6 +26,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 /Image/*
+*/migrations/*
 *.sqlite3
 # Visual Studo 2015 cache/options directory
 .vs/
