@@ -9,7 +9,21 @@ class SearchListBlog(generics.ListAPIView):
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset(*args, **kwargs)
         q = self.request.GET.get('q')
-        result = Blog.objects.none()
+        date_by = self.request.GET.get('filter')
+        result = qs
         if q is not None:
             result = BlogManager(Blog).search(q)
+        if date_by == 'latest':
+            result = result.order_by('-date_created')
+        elif date_by == 'oldest':
+            result = result.order_by('date_created')
+        elif date_by == 'relevance':
+            # you can add your custom relevance sorting logic here
+            pass
+        else:
+            # no filter selected, default to relevance
+            pass
+        # search by title
+        if q is not None:
+            result = result.filter(title__icontains=q)
         return result
