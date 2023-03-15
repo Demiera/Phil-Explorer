@@ -14,6 +14,7 @@ class BlogDeleteView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Blog.objects.filter(is_deleted=False)
     serializer_class = BlogSerializer
+    lookup_field = 'title'
 
 
 class BlogDeletedListView(generics.ListAPIView):

@@ -5,11 +5,12 @@ from .models import Blog
 class BlogSerializer(serializers.ModelSerializer):
     date_updated = serializers.ReadOnlyField()
     date_created = serializers.ReadOnlyField()
-
+    url = serializers.HyperlinkedIdentityField(view_name='blog-detail', lookup_field='title')
 
     class Meta:
         model = Blog
         fields = [
+            'url',
             'id',
             'title',
             'image',

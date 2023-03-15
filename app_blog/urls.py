@@ -7,5 +7,5 @@ urlpatterns = [
     path('blog-deleted/<str:pk>', views.BlogRestoreView.as_view(), name='blog-restore-deleted'),
     # blog
     path('blog/', views.BlogListView.as_view(), name='blog-list'),
-    path('blog/<str:pk>', views.BlogDeleteView.as_view(), name='blog-delete'),
+    path('blog/<str:title>', views.BlogDeleteView.as_view(), name='blog-detail'),
 ]
