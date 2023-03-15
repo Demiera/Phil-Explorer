@@ -5,8 +5,7 @@ from .models import Blog
 class BlogSerializer(serializers.ModelSerializer):
     date_updated = serializers.ReadOnlyField()
     date_created = serializers.ReadOnlyField()
-    date_deleted = serializers.ReadOnlyField()
-    is_deleted = serializers.ReadOnlyField()
+
 
     class Meta:
         model = Blog
@@ -17,8 +16,6 @@ class BlogSerializer(serializers.ModelSerializer):
             'description',
             'date_updated',
             'date_created',
-            'date_deleted',
-            'is_deleted',
         ]
 
 
