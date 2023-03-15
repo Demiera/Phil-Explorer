@@ -1,5 +1,25 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models import Q
+
+
+class BlogQuerySet(models.QuerySet):
+    def is_deleted(self):
+        return self.filter(is_deleted=False)
+
+    def search(self, query):
+        lookup = Q(title__icontains=query) | Q(description__icontains=query)
+        qs = self.is_deleted().filter(lookup)
+        return qs
+
+
+class BlogManager(models.QuerySet):
+    def get_queryset(self, *args, **kwargs):
+        return BlogQuerySet(self.model, using=self.db)
+
+    def search(self, query, user=None):
+        return self.get_queryset().search(query)
+
 
 class Blog(models.Model):
     title = models.CharField(unique=True, max_length=550, null=False)
@@ -9,6 +29,8 @@ class Blog(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
     date_deleted = models.DateTimeField(null=True, blank=True)
+
+    objects = BlogManager()
 
     def delete(self, using=None, keep_parents=False):
         if not self.is_deleted:
@@ -22,10 +44,10 @@ class Blog(models.Model):
             self.date_deleted = None
             self.save(update_fields=['is_deleted', 'date_deleted'])
 
-
     class Meta:
-        ordering = ['-date_created']
+        ordering = ['-date_updated', '-date_created']
 
     def __str__(self):
         return self.title
 
+#
