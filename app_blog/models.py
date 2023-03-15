@@ -17,7 +17,7 @@ class BlogManager(models.QuerySet):
     def get_queryset(self, *args, **kwargs):
         return BlogQuerySet(self.model, using=self.db)
 
-    def search(self, query, user=None):
+    def search(self, query):
         return self.get_queryset().search(query)
 
 
@@ -50,4 +50,3 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
-#
