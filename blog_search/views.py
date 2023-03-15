@@ -17,13 +17,6 @@ class SearchListBlog(generics.ListAPIView):
             result = result.order_by('-date_created')
         elif date_by == 'oldest':
             result = result.order_by('date_created')
-        elif date_by == 'relevance':
-            # you can add your custom relevance sorting logic here
-            pass
         else:
-            # no filter selected, default to relevance
             pass
-        # search by title
-        if q is not None:
-            result = result.filter(title__icontains=q)
         return result
