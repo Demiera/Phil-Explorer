@@ -7,18 +7,19 @@ from django.contrib.auth import authenticate
 from rest_framework.response import Response
 
 
-
-
 class RegisterAPIView(generics.CreateAPIView):
     queryset = AdminUser.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         user = self.serializer_class(response.data).data
         refresh = RefreshToken.for_user(AdminUser.objects.get(email=user['email']))
         data = {
-            'refresh': str(refresh),
+            'email': user['email'],
+            'first_name': user['first_name'],
+            'last_name': user['last_name'],
             'access': str(refresh.access_token),
         }
         response.data = data
@@ -28,6 +29,7 @@ class RegisterAPIView(generics.CreateAPIView):
 class LoginAPIView(generics.CreateAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -37,7 +39,9 @@ class LoginAPIView(generics.CreateAPIView):
         if user is not None:
             refresh = RefreshToken.for_user(user)
             data = {
-                'refresh': str(refresh),
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
                 'access': str(refresh.access_token),
             }
             return Response(data, status=status.HTTP_200_OK)
