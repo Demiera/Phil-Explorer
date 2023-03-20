@@ -5,7 +5,7 @@ from .models import Blog
 class BlogSerializer(serializers.ModelSerializer):
     date_updated = serializers.ReadOnlyField()
     date_created = serializers.ReadOnlyField()
-    url = serializers.HyperlinkedIdentityField(view_name='blog-detail', lookup_field='title')
+    url = serializers.HyperlinkedIdentityField(view_name='blog-detail', lookup_field='slug')
 
     class Meta:
         model = Blog
@@ -21,10 +21,12 @@ class BlogSerializer(serializers.ModelSerializer):
 
 
 class BlogDeletedSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='blog-restore-deleted', lookup_field='slug')
 
     class Meta:
         model = Blog
         fields = [
+            'url',
             'id',
             'title',
             'image',
@@ -34,6 +36,7 @@ class BlogDeletedSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = [
+            'url',
             'id',
             'title',
             'image',

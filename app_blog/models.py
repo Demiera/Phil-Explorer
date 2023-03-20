@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q
+from django.utils.text import slugify
 
 
 class BlogQuerySet(models.QuerySet):
@@ -22,7 +23,9 @@ class BlogManager(models.QuerySet):
 
 
 class Blog(models.Model):
+
     title = models.CharField(unique=True, max_length=550, null=False)
+    slug = models.SlugField(unique=True, max_length=255, null=False)
     image = models.ImageField(null=True)
     description = models.TextField(null=False)
     date_created = models.DateTimeField(auto_now_add=True)
@@ -32,11 +35,17 @@ class Blog(models.Model):
 
     objects = BlogManager()
 
-    def delete(self, using=None, keep_parents=False):
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        super(Blog, self).save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False, hard=False):
         if not self.is_deleted:
             self.is_deleted = True
             self.date_deleted = timezone.now()
             self.save(update_fields=['is_deleted', 'date_deleted'])
+        elif hard:
+            super().delete(using=using, keep_parents=keep_parents)
 
     def restore(self):
         if self.is_deleted:
