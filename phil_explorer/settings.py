@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     # ngrok domain
-    'e7d7-154-18-152-7.ap.ngrok.io',
+    '3640-2001-4455-16a-4a00-69aa-5878-4ce4-16aa.ap.ngrok.io',
 
     # localhost
     '198.211.99.20',
@@ -36,7 +36,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1'
 ]
 CSRF_TRUSTED_ORIGINS = [
-    'https://e7d7-154-18-152-7.ap.ngrok.io',
+    'https://3640-2001-4455-16a-4a00-69aa-5878-4ce4-16aa.ap.ngrok.io',
 ]
 
 
@@ -161,6 +161,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
