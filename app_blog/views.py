@@ -23,6 +23,13 @@ class BlogDeleteView(generics.RetrieveUpdateDestroyAPIView):
         obj = get_object_or_404(queryset, slug=slug)
         return obj
 
+    def delete(self, request, *args, **kwargs):
+        blog = self.get_object()
+        response_data = {}
+        if not blog.is_deleted:
+            blog.delete()
+            response_data['Message'] = f"{blog.title} has been moved to trash."
+            return Response(response_data, status=status.HTTP_200_OK)
 
 class BlogDeletedListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -39,10 +46,12 @@ class BlogRestoreView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.delete(hard=True)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        message = f"data has been permanently deleted."
+        return Response({'Message': message}, status=status.HTTP_204_NO_CONTENT)
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.restore()
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        message = f"{serializer.data['title']} has been restored."
+        return Response({'Message': message})
