@@ -16,8 +16,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             'email',
             'password',
             'password2',
-            'first_name',
-            'last_name',
             'date_created',
             'date_updated',
         ]
@@ -31,8 +29,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = AdminUser.objects.create_user(
             username=validated_data['email'],
             email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
         )
         user.set_password(validated_data['password'])
         user.save()
