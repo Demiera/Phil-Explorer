@@ -2,18 +2,18 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from .models import Blog
 from rest_framework import generics, permissions, status
-from .serializers import BlogSerializer, BlogDeletedSerializer
+from .serializers import BlogSerializer, BlogDeletedSerializer, BlogDraftSerializer
 
 
+# Blog Published
 class BlogListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Blog.objects.filter(is_deleted=False)
+    queryset = Blog.objects.filter(is_deleted=False).filter(published=True)
     serializer_class = BlogSerializer
-
 
 class BlogDeleteView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Blog.objects.filter(is_deleted=False)
+    queryset = Blog.objects.filter(is_deleted=False).filter(published=True)
     serializer_class = BlogSerializer
     lookup_field = 'slug'
 
@@ -31,6 +31,21 @@ class BlogDeleteView(generics.RetrieveUpdateDestroyAPIView):
             response_data['Message'] = f"{blog.title} has been moved to trash."
             return Response(response_data, status=status.HTTP_200_OK)
 
+# Blog Draft
+class BlogDraftView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Blog.objects.filter(is_deleted=False).filter(published=False)
+    serializer_class = BlogDraftSerializer
+    lookup_field = 'slug'
+
+class BlogDraftRetrieveView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Blog.objects.filter(is_deleted=False).filter(published=False)
+    serializer_class = BlogDraftSerializer
+    lookup_field = 'slug'
+
+
+# Blog Soft Delete
 class BlogDeletedListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Blog.objects.filter(is_deleted=True)

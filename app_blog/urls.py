@@ -10,4 +10,7 @@ urlpatterns = [
     # blog
     path('', views.BlogListView.as_view(), name='blog-list'),
     path('<slug:slug>', views.BlogDeleteView.as_view(), name='blog-detail'),
+    # blog draft
+    path('draft/', views.BlogDraftView.as_view(), name='blog-draft-list'),
+    path('draft/<slug:slug>', views.BlogDraftRetrieveView.as_view(), name='blog-draft-detail'),
 ]

@@ -15,10 +15,25 @@ class BlogSerializer(serializers.ModelSerializer):
             'title',
             'image',
             'description',
+            'published',
             'date_updated',
             'date_created',
         ]
 
+
+class BlogDraftSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='blog-draft-detail', lookup_field='slug')
+
+    class Meta:
+        model = Blog
+        fields = [
+            'url',
+            'id',
+            'title',
+            'image',
+            'description',
+            'published',
+        ]
 
 class BlogDeletedSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='blog-restore-deleted', lookup_field='slug')

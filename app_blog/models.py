@@ -23,7 +23,6 @@ class BlogManager(models.QuerySet):
 
 
 class Blog(models.Model):
-
     title = models.CharField(unique=True, max_length=550, null=False)
     slug = models.SlugField(unique=True, max_length=255, null=False)
     image = models.ImageField(null=True)
@@ -32,6 +31,7 @@ class Blog(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
     date_deleted = models.DateTimeField(null=True, blank=True)
+    published = models.BooleanField(default=True)
 
     objects = BlogManager()
 
