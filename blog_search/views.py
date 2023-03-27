@@ -21,20 +21,8 @@ class SearchListBlog(generics.ListAPIView):
         date_by = self.request.GET.get('filter')
         if q is not None:
             result = qs.search(q)
-        elif self.request.user.is_authenticated and date_by is not None:
-            if date_by == 'latest':
-                if result is not None:
-                    result = result.order_by('-date_created')
-                else:
-                    result = qs.filter(is_deleted=False).order_by('date_created')
-            elif date_by == 'oldest':
-                if result is not None:
-                    result = result.order_by('date_created')
-                else:
-                    result = qs.filter(is_deleted=False).order_by('date_created')
         else:
             result = Blog.objects.none()
-
         if self.request.user.is_authenticated and date_by is not None:
             if date_by == 'latest':
                 result = result.order_by('-date_created')
