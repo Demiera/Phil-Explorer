@@ -3,8 +3,6 @@ from .models import Blog
 
 
 class BlogSerializer(serializers.ModelSerializer):
-    date_updated = serializers.ReadOnlyField()
-    date_created = serializers.ReadOnlyField()
     url = serializers.HyperlinkedIdentityField(view_name='blog-detail', lookup_field='slug')
 
     class Meta:
@@ -15,9 +13,15 @@ class BlogSerializer(serializers.ModelSerializer):
             'title',
             'image',
             'description',
-            'published',
             'date_updated',
             'date_created',
+            'published',
+            'date_published',
+        ]
+        read_only_fields = [
+            'date_created',
+            'date_published',
+            'date_updated',
         ]
 
 
@@ -33,6 +37,12 @@ class BlogDraftSerializer(serializers.ModelSerializer):
             'image',
             'description',
             'published',
+            'date_created',
+            'date_published',
+        ]
+        read_only_fields = [
+            'date_created',
+            'date_published',
         ]
 
 class BlogDeletedSerializer(serializers.ModelSerializer):
