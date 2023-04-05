@@ -2,34 +2,47 @@ from django.db import models
 from django.utils import timezone
 from django.db.models import Q
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+def validate_image_size(value):
+    filesize = value.size
+    if filesize > 5*1024*1024:
+        raise ValidationError(
+            _("The maximum file size that can be uploaded is 5MB.")
+        )
 
 
 
 class BlogQuerySet(models.QuerySet):
     def is_deleted(self):
         return self.filter(is_deleted=False)
-    def search(self, query):
+
+    def search(self, query, is_draft=None):
         lookup = Q(title__icontains=query) | Q(description__icontains=query)
-        qs = self.is_deleted().filter(lookup)
+        qs = self.is_deleted()
+        if is_draft is not None:
+            qs = qs.filter(published=not is_draft)
+        qs = qs.filter(lookup)
         return qs
-    def is_draft(self):
-        return self.filter(published=False)
+
+
 
 
 class BlogManager(models.Manager):
     def get_queryset(self, *args, **kwargs):
-        return BlogQuerySet(self.model, using=self.db)
+        return BlogQuerySet(self.model, using=self._db)
+
     def search(self, query):
         return self.get_queryset().search(query)
-    def drafts(self):
-        return self.get_queryset().is_draft()
+
 
 
 
 class Blog(models.Model):
     title = models.CharField(unique=True, max_length=550, null=False)
     slug = models.SlugField(unique=True, max_length=255, null=False)
-    image = models.ImageField(null=True)
+    image = models.ImageField(null=False, validators=[validate_image_size])
     description = models.TextField(null=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -41,8 +54,6 @@ class Blog(models.Model):
     objects = BlogManager()
 
     def save(self, *args, **kwargs):
-        if not self.id:
-            self.date_created = timezone.now()
         if self.published and not self.date_published:
             self.date_published = timezone.now()
         self.slug = slugify(self.title)
@@ -64,5 +75,6 @@ class Blog(models.Model):
 
     class Meta:
         ordering = ['-date_published', '-date_updated', '-date_created']
+
     def __str__(self):
         return self.title

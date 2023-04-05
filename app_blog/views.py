@@ -33,13 +33,13 @@ class BlogDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
 # Blog Draft
 class BlogDraftView(generics.ListAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Blog.objects.filter(is_deleted=False).filter(published=False)
     serializer_class = BlogDraftSerializer
     lookup_field = 'slug'
 
 class BlogDraftRetrieveView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Blog.objects.filter(is_deleted=False).filter(published=False)
     serializer_class = BlogDraftSerializer
     lookup_field = 'slug'

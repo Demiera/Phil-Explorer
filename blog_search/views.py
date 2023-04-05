@@ -15,17 +15,23 @@ class SearchListBlog(generics.ListAPIView):
     serializer_class = BlogSerializer
     permission_classes = [IsAuthenticatedOrQueryParamsAllowed]
 
-    def get_queryset(self, result=None, *args, **kwargs):
-        qs = BlogManager(Blog)
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
         q = self.request.GET.get('q')
         date_by = self.request.GET.get('filter')
+        draft = self.request.GET.get('draft')
+
         if q is not None:
-            result = qs.search(q)
-        else:
-            result = Blog.objects.none()
+            qs = qs.search(q)
         if self.request.user.is_authenticated and date_by is not None:
             if date_by == 'latest':
-                result = result.order_by('-date_created')
+                qs = qs.order_by('-date_created')
             elif date_by == 'oldest':
-                result = result.order_by('date_created')
-        return result
+                qs = qs.order_by('date_created')
+            if draft is not None and draft.lower() == 'false':
+                qs = qs.filter(published=False)
+            elif draft is not None and draft.lower() == 'true':
+                qs = qs.filter(published=True)
+        return qs
+
+
