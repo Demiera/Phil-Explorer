@@ -16,15 +16,24 @@ def validate_image_size(value):
 
 class BlogQuerySet(models.QuerySet):
     def is_deleted(self):
+        return self.filter(is_deleted=True)
+
+    def is_not_deleted(self):
         return self.filter(is_deleted=False)
 
     def search(self, query, is_draft=None):
         lookup = Q(title__icontains=query) | Q(description__icontains=query)
-        qs = self.is_deleted()
+        qs = self.is_not_deleted()
         if is_draft is not None:
             qs = qs.filter(published=not is_draft)
         qs = qs.filter(lookup)
         return qs
+
+    def deleted_search(self, query):
+        lookup = Q(title__icontains=query) | Q(description__icontains=query)
+        qs = self.is_deleted().filter(lookup)
+        return qs
+
 
 
 
@@ -74,7 +83,7 @@ class Blog(models.Model):
             self.save(update_fields=['is_deleted', 'date_deleted'])
 
     class Meta:
-        ordering = ['-date_published', '-date_updated', '-date_created']
+        ordering = ['-date_created', '-date_published', '-date_updated']
 
     def __str__(self):
         return self.title
