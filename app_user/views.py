@@ -40,8 +40,6 @@ class LoginAPIView(generics.CreateAPIView):
             refresh = RefreshToken.for_user(user)
             data = {
                 'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
                 'access': str(refresh.access_token),
             }
             return Response(data, status=status.HTTP_200_OK)
