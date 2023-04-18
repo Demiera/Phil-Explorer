@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .models import Blog
 from rest_framework import generics, permissions, status
@@ -44,6 +45,17 @@ class BlogDraftRetrieveView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BlogDraftSerializer
     lookup_field = 'slug'
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Check if the blog is published after update
+        if serializer.validated_data.get('published'):
+            return Response({'message': 'This blog has been published.'}, status=status.HTTP_200_OK)
+
+        return Response(serializer.data)
 
 # Blog Soft Delete
 class BlogDeletedListView(generics.ListAPIView):
