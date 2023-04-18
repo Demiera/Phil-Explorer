@@ -15,16 +15,10 @@ SECRET_KEY = 'django-insecure-700th08r@*6xqt83f43pmd=tgm#1c4=2h2^5pnx+7kc9z^%+-=
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    # ngrok domain
-    '3640-2001-4455-16a-4a00-69aa-5878-4ce4-16aa.ap.ngrok.io',
-
-    # localhost
-    '198.211.99.20',
-    'localhost',
-    '127.0.0.1'
+    '*'
 ]
 CSRF_TRUSTED_ORIGINS = [
-    'https://3640-2001-4455-16a-4a00-69aa-5878-4ce4-16aa.ap.ngrok.io',
+    'https://0dee-154-18-152-7.ap.ngrok.io',
 ]
 
 
@@ -39,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # 3rd Party Package
+    'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
 
@@ -51,6 +46,10 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'app_user.AdminUser'
 
 MIDDLEWARE = [
+    # Cors
+    'corsheaders.middleware.CorsMiddleware',
+
+    # Default
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,6 +60,20 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'phil_explorer.urls'
+CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOWED_ORIGINS = [
+#     'https://localhost:8000',
+#     'http://localhost:8000',
+#     'https://localhost:8111',
+#     'http://localhost:8111',
+#     'https://localhost:3000',
+#     'http://localhost:8111',
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+
+
 
 TEMPLATES = [
     {
@@ -127,8 +140,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+
+    BASE_DIR / 'static'
+
+]
 MEDIA_URL = '/Image/'
-MEDIA_ROOT = BASE_DIR / 'Image'
+MEDIA_ROOT = BASE_DIR / 'static/Image'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -144,7 +162,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 5,
+    "PAGE_SIZE": 8,
 }
 
 SIMPLE_JWT = {
