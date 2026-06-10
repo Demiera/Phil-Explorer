@@ -13,4 +13,4 @@ class AdminUser(AbstractUser):
         ]
 
     def __str__(self):
-        return self.last_name
+        return self.email

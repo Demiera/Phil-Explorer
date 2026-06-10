@@ -208,3 +208,11 @@ FakesAssemblies/
 
 # PYC files
 **/*.pyc
+
+# Python virtual environment
+venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc

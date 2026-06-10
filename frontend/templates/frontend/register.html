@@ -1,0 +1,147 @@
+{% extends 'frontend/base.html' %}
+{% block title %}Sign Up — Phil Explorer{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-page {
+    min-height: calc(100vh - 64px - 72px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 48px 24px;
+    background: linear-gradient(135deg, var(--mist) 0%, var(--sand) 100%);
+  }
+  .auth-card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: 44px 40px 36px;
+    width: 100%; max-width: 440px;
+  }
+  .auth-logo { text-align: center; margin-bottom: 28px; }
+  .auth-logo .icon { font-size: 2.4rem; }
+  .auth-logo h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--forest); margin-top: 8px; }
+  .auth-logo p { font-size: .85rem; color: var(--midtone); margin-top: 4px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .submit-btn {
+    width: 100%; padding: 12px;
+    background: var(--forest); color: var(--white);
+    border: none; border-radius: 8px;
+    font-size: .97rem; font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .submit-btn:hover { background: var(--moss); }
+  .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .auth-footer { text-align: center; margin-top: 20px; font-size: .85rem; color: var(--midtone); }
+  .auth-footer a { color: var(--forest); font-weight: 600; text-decoration: none; }
+  .auth-footer a:hover { text-decoration: underline; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="icon">🌴</div>
+      <h1>Create your account</h1>
+      <p>Join the PhilExplorer community</p>
+    </div>
+
+    <form id="register-form" onsubmit="handleRegister(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="first_name">First name</label>
+          <input class="form-input" type="text" id="first_name" name="first_name"
+                 placeholder="Juan" required autocomplete="given-name" />
+          <div class="form-error" id="first_name-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="last_name">Last name</label>
+          <input class="form-input" type="text" id="last_name" name="last_name"
+                 placeholder="dela Cruz" required autocomplete="family-name" />
+          <div class="form-error" id="last_name-error"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" type="text" id="username" name="username"
+               placeholder="juandelacruz" required autocomplete="username" />
+        <div class="form-error" id="username-error"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email">Email address</label>
+        <input class="form-input" type="email" id="email" name="email"
+               placeholder="you@example.com" required autocomplete="email" />
+        <div class="form-error" id="email-error"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" type="password" id="password" name="password"
+               placeholder="Minimum 8 characters" required autocomplete="new-password" />
+        <div class="form-error" id="password-error"></div>
+      </div>
+      <div class="form-error" id="global-error" style="margin-bottom:14px;text-align:center;"></div>
+      <button class="submit-btn" type="submit" id="submit-btn">
+        <span id="btn-text">Create account</span>
+      </button>
+    </form>
+
+    <hr class="divider" />
+
+    <p class="auth-footer">
+      Already have an account? <a href="/login/">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  if (getToken()) window.location.href = '/';
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    const btn  = document.getElementById('submit-btn');
+    const text = document.getElementById('btn-text');
+
+    // Clear errors
+    ['first_name-error','last_name-error','username-error','email-error','password-error','global-error']
+      .forEach(id => document.getElementById(id).textContent = '');
+
+    btn.disabled = true;
+    text.textContent = 'Creating account…';
+
+    const payload = {
+      first_name: document.getElementById('first_name').value.trim(),
+      last_name:  document.getElementById('last_name').value.trim(),
+      username:   document.getElementById('username').value.trim(),
+      email:      document.getElementById('email').value.trim(),
+      password:   document.getElementById('password').value,
+    };
+
+    try {
+      const data = await apiFetch('/register/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      setAuth(data);
+      showToast('Account created! Welcome to PhilExplorer 🌿');
+      setTimeout(() => window.location.href = '/', 800);
+    } catch(err) {
+      btn.disabled = false;
+      text.textContent = 'Create account';
+      const errors = err?.data || {};
+      let hasField = false;
+      Object.entries(errors).forEach(([field, msgs]) => {
+        const el = document.getElementById(`${field}-error`);
+        if (el) { el.textContent = Array.isArray(msgs) ? msgs[0] : msgs; hasField = true; }
+      });
+      if (!hasField) {
+        document.getElementById('global-error').textContent =
+          errors?.detail || errors?.error || 'Registration failed. Please try again.';
+      }
+    }
+  }
+</script>
+{% endblock %}

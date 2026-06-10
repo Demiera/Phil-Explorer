@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'app_blog',
     'blog_search',
     'app_user',
+    'frontend',
 ]
 
 AUTH_USER_MODEL = 'app_user.AdminUser'

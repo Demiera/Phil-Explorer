@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Phil Explorer{% endblock %}</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --forest:   #1B4332;
+      --moss:     #2D6A4F;
+      --sage:     #52B788;
+      --mist:     #D8F3DC;
+      --sand:     #F8F4EF;
+      --ink:      #1A1A1A;
+      --midtone:  #6B7280;
+      --border:   #E5E7EB;
+      --white:    #FFFFFF;
+      --error:    #DC2626;
+      --radius:   12px;
+      --shadow:   0 4px 24px rgba(27,67,50,.10);
+      --shadow-lg:0 12px 48px rgba(27,67,50,.16);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--sand);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--forest);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-logo span { color: var(--sage); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-link {
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--midtone);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: background .15s, color .15s;
+    }
+    .nav-link:hover { background: var(--mist); color: var(--forest); }
+    .nav-link.active { color: var(--forest); background: var(--mist); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary {
+      background: var(--forest);
+      color: var(--white);
+      padding: 9px 20px;
+      font-size: .9rem;
+    }
+    .btn-primary:hover { background: var(--moss); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--forest);
+      padding: 9px 20px;
+      font-size: .9rem;
+      border: 1.5px solid var(--forest);
+    }
+    .btn-ghost:hover { background: var(--mist); }
+    .btn-sm { padding: 6px 14px; font-size: .82rem; }
+
+    /* ── MAIN ── */
+    main { flex: 1; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      top: 80px; right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: var(--forest);
+      color: var(--white);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: .88rem;
+      box-shadow: var(--shadow);
+      animation: slideIn .25s ease;
+      max-width: 320px;
+    }
+    .toast.error { background: var(--error); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--forest);
+      color: rgba(255,255,255,.7);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: .83rem;
+      margin-top: auto;
+    }
+    footer a { color: var(--sage); text-decoration: none; }
+
+    /* ── FORM UTILS ── */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: .83rem;
+      font-weight: 500;
+      color: var(--midtone);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .form-input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: .93rem;
+      color: var(--ink);
+      background: var(--white);
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--sage);
+      box-shadow: 0 0 0 3px rgba(82,183,136,.15);
+    }
+    .form-error {
+      color: var(--error);
+      font-size: .8rem;
+      margin-top: 4px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+    /* ── LOADING SPINNER ── */
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--sage);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 48px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+    .badge-green { background: var(--mist); color: var(--forest); }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">🌿 Phil<span>Explorer</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="/" class="nav-link" id="nav-home">Home</a>
+      <a href="/blogs/" class="nav-link" id="nav-blogs">Blogs</a>
+      <span id="nav-auth-guest">
+        <a href="/login/" class="btn btn-ghost btn-sm">Log in</a>
+        <a href="/register/" class="btn btn-primary btn-sm" style="margin-left:6px">Sign up</a>
+      </span>
+      <span id="nav-auth-user" style="display:none;align-items:center;gap:10px;">
+        <span id="nav-username" style="font-size:.88rem;color:var(--midtone);"></span>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>
+      </span>
+    </div>
+  </div>
+</nav>
+
+<div id="toast-container"></div>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <p>© 2024 PhilExplorer — Discover the beauty of the Philippines.</p>
+</footer>
+
+<script>
+  const API = 'http://localhost:8000/api';
+
+  /* ── Auth helpers ── */
+  function getToken()   { return localStorage.getItem('access_token'); }
+  function getEmail()   { return localStorage.getItem('user_email'); }
+  function setAuth(data) {
+    localStorage.setItem('access_token', data.access);
+    localStorage.setItem('user_email',   data.email);
+    updateNavAuth();
+  }
+  function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_email');
+    updateNavAuth();
+    showToast('Logged out successfully.');
+    setTimeout(() => window.location.href = '/', 600);
+  }
+  function updateNavAuth() {
+    const token = getToken();
+    document.getElementById('nav-auth-guest').style.display = token ? 'none'  : 'inline-flex';
+    document.getElementById('nav-auth-user').style.display  = token ? 'flex'  : 'none';
+    const el = document.getElementById('nav-username');
+    if (el && getEmail()) el.textContent = getEmail();
+  }
+
+  /* ── Toast ── */
+  function showToast(msg, isError = false) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast' + (isError ? ' error' : '');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  /* ── API fetch ── */
+  async function apiFetch(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(API + path, { ...opts, headers });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw { status: res.status, data };
+    return data;
+  }
+
+  /* ── Active nav link ── */
+  (function() {
+    updateNavAuth();
+    const path = window.location.pathname;
+    if (path === '/') document.getElementById('nav-home')?.classList.add('active');
+    else if (path.startsWith('/blogs')) document.getElementById('nav-blogs')?.classList.add('active');
+  })();
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
