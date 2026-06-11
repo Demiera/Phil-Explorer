@@ -10,7 +10,7 @@ def blog_detail(request, slug):
     return render(request, 'frontend/blog_detail.html', {'slug': slug})
 
 def login_view(request):
-    return render(request, 'frontend/login.html')
+    return render(request, 'frontend/app_user/login.html')
 
 def register_view(request):
     return render(request, 'frontend/register.html')

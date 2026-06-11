@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — TourSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<div class="login-layout">
+
+  <!-- Left: Form -->
+  <div class="login-form-side">
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="toast error" style="position:relative;top:auto;right:auto;margin-bottom:20px;animation:none;">
+        <span class="toast-icon error">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <span class="toast-text">
+          <strong>Login Failed</strong>
+          <span>{{ message }}</span>
+        </span>
+        <button class="toast-close" onclick="this.closest('.toast').remove()">×</button>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <h1>Login</h1>
+
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input
+          type="email"
+          name="email"
+          class="form-input"
+          placeholder="Email Address"
+          value="{{ request.POST.email|default:'' }}"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap" style="position:relative;">
+          <input
+            type="password"
+            name="password"
+            class="form-input"
+            placeholder="Password"
+            id="passwordInput"
+            required
+          >
+          <button type="button" class="show-hide-btn" id="togglePw">SHOW</button>
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn">Log in</button>
+    </form>
+  </div>
+
+  <!-- Right: Hero image -->
+    <div class="login-image-side"
+      style="background-image: url('{% static "Image/philippines.png" %}');">
+    <!-- Fallback gradient if image not found -->
+    <div style="position:absolute;inset:0;background:linear-gradient(160deg,#0D1B3E 0%,#1a5276 50%,#0e6655 100%);opacity:.6;"></div>
+    <div class="overlay-text" style="position:relative;z-index:1;">
+      <p class="tagline">Top Travel Goals in the</p>
+      <h2>Philippines</h2>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const pw = document.getElementById('passwordInput');
+  const toggle = document.getElementById('togglePw');
+  toggle.addEventListener('click', () => {
+    const isHidden = pw.type === 'password';
+    pw.type = isHidden ? 'text' : 'password';
+    toggle.textContent = isHidden ? 'HIDE' : 'SHOW';
+  });
+</script>
+</body>
+</html>
