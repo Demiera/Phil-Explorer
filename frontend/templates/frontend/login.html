@@ -1,14 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login — TOURSPOT</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  
+
+  <!-- <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Rubik', sans-serif;
       background: #fff;
       min-height: 100vh;
       display: flex;
@@ -16,14 +22,24 @@
 
     /* ── LEFT PANEL ── */
     .left {
-      flex: 0 0 420px;
+      flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       padding: 56px 52px;
       background: #fff;
     }
-    .left h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 32px; color: #111; }
+    .left h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 36px;
+      color: #111;
+      max-width: 420px;
+      width: 100%;
+    }
+    #login-form { max-width: 420px; width: 100%; }
+    .form-footer { max-width: 420px; width: 100%; }
 
     .alert {
       display: flex; align-items: flex-start; gap: 10px;
@@ -31,45 +47,71 @@
       border: 1px solid #FCA5A5;
       border-radius: 8px;
       padding: 12px 14px;
-      margin-bottom: 24px;
       font-size: .83rem; color: #991B1B;
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      max-width: 340px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      z-index: 1000;
     }
     .alert-icon { color: #EF4444; font-size: 1rem; flex-shrink: 0; }
     .alert-close { margin-left: auto; background: none; border: none; cursor: pointer; color: #9CA3AF; font-size: 1rem; }
     .alert strong { display: block; font-weight: 600; }
     .alert.hidden { display: none; }
 
-    .form-group { margin-bottom: 18px; }
-    .form-label { display: block; font-size: .83rem; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    /* ── FORM ── */
+    .form-group { margin-bottom: 24px; }
+    .form-label {
+      display: block;
+      font-size: .9rem;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 8px;
+    }
     .input-wrap { position: relative; }
     .form-input {
-      width: 100%; padding: 10px 14px;
-      border: 1.5px solid #D1D5DB; border-radius: 6px;
-      font-family: 'Inter', sans-serif; font-size: .9rem;
-      outline: none; transition: border-color .15s;
+      width: 100%;
+      height: 50px;
+      padding: 12px 16px;
+      border: 1.5px solid #D1D5DB;
+      border-radius: 8px;
+      font-family: 'Rubik', sans-serif;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .15s;
       color: #111;
+      background: #fff;
     }
+    .form-input::placeholder { color: #9CA3AF; }
     .form-input:focus { border-color: #4F46E5; }
     .form-input.error { border-color: #EF4444; background: #FEF2F2; }
     .show-btn {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      font-size: .7rem; font-weight: 700; letter-spacing: .06em;
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      font-size: .75rem; font-weight: 700; letter-spacing: .06em;
       color: #6B7280; background: none; border: none; cursor: pointer;
     }
 
     .submit-btn {
-      width: 100%; padding: 12px;
-      background: #1E3A8A; color: #fff;
-      border: none; border-radius: 6px;
-      font-size: .95rem; font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer; transition: background .15s; margin-top: 4px;
+      width: 100%;
+      padding: 14px;
+      background: #1E3A8A;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Rubik', sans-serif;
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: 8px;
+      letter-spacing: .02em;
     }
     .submit-btn:hover { background: #1e40af; }
     .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
 
-    .form-footer { margin-top: 16px; font-size: .83rem; color: #6B7280; text-align: center; }
-    .form-footer a { color: #4F46E5; font-weight: 600; text-decoration: none; }
+    .form-footer { margin-top: 20px; font-size: .9rem; color: #6B7280; text-align: center; }
+    .form-footer a { color: #4F46E5; font-weight: 700; text-decoration: none; }
 
     /* ── RIGHT PANEL ── */
     .right {
@@ -77,30 +119,64 @@
       background: linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.5)),
                   url('https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=900&auto=format&fit=crop') center/cover no-repeat;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
+      justify-content: center;
       padding: 40px;
       min-height: 100vh;
     }
     .right-text {
       color: #fff;
+      text-align: center;
     }
     .right-text .eyebrow {
-      display: flex; align-items: center; gap: 12px;
-      font-size: .78rem; font-weight: 600; letter-spacing: .14em;
-      text-transform: uppercase; margin-bottom: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      font-size: 1rem; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; margin-bottom: 10px;
     }
     .right-text .eyebrow::before,
     .right-text .eyebrow::after {
-      content: ''; flex: 0 0 40px; height: 2px; background: #fff;
+      content: ''; flex: 0 0 56px; height: 2px; background: #fff;
     }
     .right-text h2 {
-      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-size: clamp(3.2rem, 7vw, 5.5rem);
       font-weight: 900;
       line-height: 1.05;
       letter-spacing: .02em;
       text-transform: uppercase;
     }
-  </style>
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .right {
+        min-height: 40vh;
+        order: -1;
+        padding: 32px 20px;
+      }
+      .left {
+        padding: 40px 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .left { padding: 32px 18px; }
+      .left h1 { font-size: 1.7rem; margin-bottom: 28px; }
+      .form-group { margin-bottom: 18px; }
+      .right { padding: 24px 16px; min-height: 32vh; }
+      .right-text .eyebrow {
+        font-size: .75rem;
+        gap: 10px;
+      }
+      .right-text .eyebrow::before,
+      .right-text .eyebrow::after { flex: 0 0 30px; }
+      .right-text h2 { font-size: clamp(2.2rem, 10vw, 3.2rem); }
+      .alert {
+        left: 16px;
+        right: 16px;
+        max-width: none;
+      }
+    }
+  </style> -->
 </head>
 <body>
 
