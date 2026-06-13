@@ -1,10 +1,11 @@
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer
 from .models import AdminUser
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
+
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -24,6 +25,22 @@ class RegisterAPIView(generics.CreateAPIView):
         }
         response.data = data
         return response
+
+class ChangePasswordAPIView(generics.GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+ 
+    def patch(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'detail': 'Password changed successfully.'},
+            status=status.HTTP_200_OK
+        )       
 
 
 class LoginAPIView(generics.CreateAPIView):
