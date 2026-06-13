@@ -12,13 +12,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AdminUser
-        fields = [
-            'email',
-            'password',
-            'password2',
-            'date_created',
-            'date_updated',
-        ]
+        fields = ['email', 'first_name', 'last_name', 'password', 'password2', 'date_created', 'date_updated']
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -29,11 +23,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = AdminUser.objects.create_user(
             username=validated_data['email'],
             email=validated_data['email'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
         )
         user.set_password(validated_data['password'])
         user.save()
         return user
-
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

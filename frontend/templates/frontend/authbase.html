@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}TOURSPOT{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="left">
+  <!-- Error alert -->
+  <div class="alert hidden" id="error-alert">
+    <span class="alert-icon">⊗</span>
+    <div>
+      <strong>Login Failed</strong>
+      <span id="error-msg">Your login details are incorrect.</span>
+    </div>
+    <button class="alert-close" onclick="this.closest('.alert').classList.add('hidden')">⊗</button>
+  </div>
+    {% block content %}{% endblock %}
+
+<div class="right">
+  <div class="right-text">
+    <p class="eyebrow">Top Travel Goals in the</p>
+    <h2>Philippines</h2>
+  </div>
+</div>
+
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>
