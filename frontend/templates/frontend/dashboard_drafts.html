@@ -1,0 +1,125 @@
+{% extends 'frontend/base.html' %}
+{% block title %}Drafts — TOURSPOT{% endblock %}
+{% block nav_drafts %}active{% endblock %}
+
+{% block content %}
+<div id="loading"><div class="spinner"></div></div>
+<div id="posts-state" style="display:none;">
+  <h1 class="page-heading">DRAFT POSTS</h1>
+  <div class="search-row">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" class="search-input" id="search" placeholder="Search" />
+    </div>
+    <div class="select-wrap">
+      <select id="filter-select" onchange="applyFilter()">
+        <option value="">Select option</option>
+        <option value="latest">Latest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Date Created</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-backdrop" id="delete-modal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" width="48" height="48"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4h6v2"/></svg>
+    </div>
+    <h3>Are you sure you want to delete this draft?</h3>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('delete-modal')">CANCEL</button>
+      <button class="btn btn-danger" onclick="doDelete()">DELETE</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  if (!localStorage.getItem('access_token')) window.location.href = '/login/';
+
+  const PAGE_SIZE = 8;
+  let currentPage=1, totalPages=1, pendingSlug=null, searchTimer, currentSearch='', currentFilter='';
+
+  async function load() {
+    document.getElementById('loading').style.display='block';
+    document.getElementById('posts-state').style.display='none';
+    const offset=(currentPage-1)*PAGE_SIZE;
+    const q = currentSearch ? `&q=${encodeURIComponent(currentSearch)}`:'';
+    const f = currentFilter ? `&filter=${currentFilter}`:'';
+    try {
+      const data = await apiFetch(`/blog/draft/?limit=${PAGE_SIZE}&offset=${offset}`);
+      const blogs = data.results || data;
+      const total = data.count ?? blogs.length;
+      totalPages = Math.ceil(total/PAGE_SIZE)||1;
+      document.getElementById('loading').style.display='none';
+      document.getElementById('posts-state').style.display='block';
+      const tbody = document.getElementById('table-body');
+      if (!blogs.length) {
+        tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#9CA3AF;padding:28px;">No draft posts.</td></tr>';
+        document.getElementById('pagination').innerHTML=''; return;
+      }
+      tbody.innerHTML = blogs.map(b => {
+        const d = b.date_created ? new Date(b.date_created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'';
+        return `<tr>
+          <td>${b.title}</td>
+          <td>${d}</td>
+          <td>
+            <a href="/edit/${b.slug}/" class="action-link blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </a>
+            <button class="action-link red" onclick="askDelete('${b.slug}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Delete
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
+      renderPagination();
+    } catch(e) {
+      document.getElementById('loading').style.display='none';
+      document.getElementById('posts-state').style.display='block';
+      document.getElementById('table-body').innerHTML='<tr><td colspan="3" style="text-align:center;color:#EF4444;">Could not load drafts.</td></tr>';
+    }
+  }
+
+  function renderPagination() {
+    const p=document.getElementById('pagination');
+    if(totalPages<=1){p.innerHTML='';return;}
+    let html=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&lt;</button>`;
+    for(let i=1;i<=totalPages;i++) html+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>&gt;</button>`;
+    p.innerHTML=html;
+  }
+  function goPage(n){currentPage=n;load();}
+  function applyFilter(){currentFilter=document.getElementById('filter-select').value;currentPage=1;load();}
+  document.getElementById('search').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentSearch=e.target.value.trim();currentPage=1;load();},350);});
+
+  function askDelete(slug){pendingSlug=slug;openModal('delete-modal');}
+  async function doDelete(){
+    if(!pendingSlug)return;
+    try{
+      await apiFetch(`/blog/draft/${pendingSlug}`,{method:'DELETE'});
+      closeModal('delete-modal'); showToast('Draft deleted.'); load();
+    }catch(e){showToast('Could not delete draft.','error');}
+  }
+
+  load();
+</script>
+{% endblock %}

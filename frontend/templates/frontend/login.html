@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — TOURSPOT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left {
+      flex: 0 0 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 52px;
+      background: #fff;
+    }
+    .left h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 32px; color: #111; }
+
+    .alert {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 24px;
+      font-size: .83rem; color: #991B1B;
+    }
+    .alert-icon { color: #EF4444; font-size: 1rem; flex-shrink: 0; }
+    .alert-close { margin-left: auto; background: none; border: none; cursor: pointer; color: #9CA3AF; font-size: 1rem; }
+    .alert strong { display: block; font-weight: 600; }
+    .alert.hidden { display: none; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: .83rem; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    .input-wrap { position: relative; }
+    .form-input {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #D1D5DB; border-radius: 6px;
+      font-family: 'Inter', sans-serif; font-size: .9rem;
+      outline: none; transition: border-color .15s;
+      color: #111;
+    }
+    .form-input:focus { border-color: #4F46E5; }
+    .form-input.error { border-color: #EF4444; background: #FEF2F2; }
+    .show-btn {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: .7rem; font-weight: 700; letter-spacing: .06em;
+      color: #6B7280; background: none; border: none; cursor: pointer;
+    }
+
+    .submit-btn {
+      width: 100%; padding: 12px;
+      background: #1E3A8A; color: #fff;
+      border: none; border-radius: 6px;
+      font-size: .95rem; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: background .15s; margin-top: 4px;
+    }
+    .submit-btn:hover { background: #1e40af; }
+    .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    .form-footer { margin-top: 16px; font-size: .83rem; color: #6B7280; text-align: center; }
+    .form-footer a { color: #4F46E5; font-weight: 600; text-decoration: none; }
+
+    /* ── RIGHT PANEL ── */
+    .right {
+      flex: 1;
+      background: linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.5)),
+                  url('https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=900&auto=format&fit=crop') center/cover no-repeat;
+      display: flex;
+      align-items: flex-end;
+      padding: 40px;
+      min-height: 100vh;
+    }
+    .right-text {
+      color: #fff;
+    }
+    .right-text .eyebrow {
+      display: flex; align-items: center; gap: 12px;
+      font-size: .78rem; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .right-text .eyebrow::before,
+    .right-text .eyebrow::after {
+      content: ''; flex: 0 0 40px; height: 2px; background: #fff;
+    }
+    .right-text h2 {
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="left">
+  <!-- Error alert -->
+  <div class="alert hidden" id="error-alert">
+    <span class="alert-icon">⊗</span>
+    <div>
+      <strong>Login Failed</strong>
+      <span id="error-msg">Your login details are incorrect.</span>
+    </div>
+    <button class="alert-close" onclick="this.closest('.alert').classList.add('hidden')">⊗</button>
+  </div>
+
+  <h1>Login</h1>
+
+  <form id="login-form" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label class="form-label" for="email">Email Address</label>
+      <input class="form-input" type="email" id="email" placeholder="Email Address" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="password">Password</label>
+      <div class="input-wrap">
+        <input class="form-input" type="password" id="password" placeholder="Password" required />
+        <button type="button" class="show-btn" id="show-btn" onclick="togglePw()">SHOW</button>
+      </div>
+    </div>
+    <button class="submit-btn" type="submit" id="submit-btn">Log in</button>
+  </form>
+
+  <div class="form-footer">
+    Don't have an account? <a href="/register/">Sign up</a>
+  </div>
+</div>
+
+<div class="right">
+  <div class="right-text">
+    <p class="eyebrow">Top Travel Goals in the</p>
+    <h2>Philippines</h2>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:8000/api';
+
+  if (localStorage.getItem('access_token')) window.location.href = '/';
+
+  function togglePw() {
+    const inp = document.getElementById('password');
+    const btn = document.getElementById('show-btn');
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'HIDE'; }
+    else                          { inp.type = 'password'; btn.textContent = 'SHOW'; }
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const alert = document.getElementById('error-alert');
+    alert.classList.add('hidden');
+    btn.disabled = true; btn.textContent = 'Logging in…';
+
+    try {
+      const res = await fetch(API + '/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:    document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw data;
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('user_email',   data.email);
+      window.location.href = '/';
+    } catch(err) {
+      const msg = err?.error || err?.detail || 'Your login details are incorrect.';
+      document.getElementById('error-msg').textContent = msg;
+      alert.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Log in';
+    }
+  }
+</script>
+</body>
+</html>

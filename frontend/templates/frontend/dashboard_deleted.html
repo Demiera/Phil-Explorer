@@ -1,0 +1,115 @@
+{% extends 'frontend/base.html' %}
+{% block title %}Deleted — TOURSPOT{% endblock %}
+{% block nav_deleted %}active{% endblock %}
+
+{% block content %}
+<div id="loading"><div class="spinner"></div></div>
+<div id="posts-state" style="display:none;">
+  <h1 class="page-heading">DELETED POSTS</h1>
+  <div class="search-row">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" class="search-input" id="search" placeholder="Search" />
+    </div>
+    <div class="select-wrap">
+      <select id="filter-select" onchange="applyFilter()">
+        <option value="">Select option</option>
+        <option value="latest">Latest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Date Deleted</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Permanently Delete Modal -->
+<div class="modal-backdrop" id="perm-delete-modal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" width="48" height="48"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4h6v2"/></svg>
+    </div>
+    <h3>Are you sure you want to permanently delete this post?</h3>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('perm-delete-modal')">CANCEL</button>
+      <button class="btn btn-danger" onclick="doPermDelete()">DELETE</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  if (!localStorage.getItem('access_token')) window.location.href = '/login/';
+
+  const PAGE_SIZE=8;
+  let currentPage=1,totalPages=1,pendingSlug=null,searchTimer,currentSearch='',currentFilter='';
+
+  async function load(){
+    document.getElementById('loading').style.display='block';
+    document.getElementById('posts-state').style.display='none';
+    const offset=(currentPage-1)*PAGE_SIZE;
+    try{
+      const data=await apiFetch(`/blog/deleted/?limit=${PAGE_SIZE}&offset=${offset}`);
+      const blogs=data.results||data;
+      const total=data.count??blogs.length;
+      totalPages=Math.ceil(total/PAGE_SIZE)||1;
+      document.getElementById('loading').style.display='none';
+      document.getElementById('posts-state').style.display='block';
+      const tbody=document.getElementById('table-body');
+      if(!blogs.length){tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#9CA3AF;padding:28px;">No deleted posts.</td></tr>';document.getElementById('pagination').innerHTML='';return;}
+      tbody.innerHTML=blogs.map(b=>{
+        const d=b.date_deleted?new Date(b.date_deleted).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'';
+        return `<tr>
+          <td>${b.title}</td>
+          <td>${d}</td>
+          <td>
+            <button class="action-link green" onclick="doRestore('${b.slug}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 12a9 9 0 109-9H3"/><polyline points="3 7 3 3 7 3"/></svg>
+              Restore
+            </button>
+            <button class="action-link red" onclick="askPermDelete('${b.slug}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Permanently Delete
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
+      renderPagination();
+    }catch(e){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('posts-state').style.display='block';
+      document.getElementById('table-body').innerHTML='<tr><td colspan="3" style="text-align:center;color:#EF4444;">Could not load.</td></tr>';
+    }
+  }
+
+  function renderPagination(){const p=document.getElementById('pagination');if(totalPages<=1){p.innerHTML='';return;}let h=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&lt;</button>`;for(let i=1;i<=totalPages;i++)h+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;h+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>&gt;</button>`;p.innerHTML=h;}
+  function goPage(n){currentPage=n;load();}
+  function applyFilter(){currentFilter=document.getElementById('filter-select').value;currentPage=1;load();}
+  document.getElementById('search').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentSearch=e.target.value.trim();currentPage=1;load();},350);});
+
+  async function doRestore(slug){
+    try{await apiFetch(`/blog/deleted/${slug}`,{method:'PUT'});showToast('Post restored.');load();}
+    catch(e){showToast('Could not restore.','error');}
+  }
+  function askPermDelete(slug){pendingSlug=slug;openModal('perm-delete-modal');}
+  async function doPermDelete(){
+    if(!pendingSlug)return;
+    try{await apiFetch(`/blog/deleted/${pendingSlug}`,{method:'DELETE'});closeModal('perm-delete-modal');showToast('Post permanently deleted.');load();}
+    catch(e){showToast('Could not delete.','error');}
+  }
+
+  load();
+</script>
+{% endblock %}
