@@ -24,3 +24,9 @@ def edit_post(request, slug):
 
 def profile(request):
     return render(request, 'frontend/profile.html')
+
+def public_blog_list(request):
+    return render(request, 'frontend/blog_list.html')
+
+def public_blog_detail(request, slug):
+    return render(request, 'frontend/blog_details.html', {'slug': slug})

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ slug }} — TOURSPOT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0D1B3E;
+      --blue:    #1E3A8A;
+      --accent:  #4F46E5;
+      --ink:     #111827;
+      --gray400: #9CA3AF;
+      --gray500: #6B7280;
+      --gray200: #E5E7EB;
+      --gray100: #F3F4F6;
+      --white:   #FFFFFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+    }
+
+    .topnav { padding: 16px 40px; border-bottom: 1px solid var(--gray200); }
+    .brand { font-size: 1.05rem; font-weight: 800; letter-spacing: .02em; color: var(--navy); text-decoration: none; }
+    .brand span { color: var(--accent); }
+
+    .post-wrap { max-width: 860px; margin: 0 auto; padding: 28px 24px 60px; }
+
+    .back-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--gray200); background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink); text-decoration: none; margin-bottom: 24px;
+    }
+    .back-btn:hover { border-color: var(--gray400); }
+    .back-btn svg { width: 17px; height: 17px; }
+
+    .post-title { font-size: 2rem; font-weight: 800; color: var(--ink); margin-bottom: 10px; line-height: 1.2; }
+    .post-meta { font-size: .85rem; color: var(--gray500); margin-bottom: 22px; }
+    .post-meta .tag { color: var(--accent); font-weight: 600; }
+
+    .post-image { width: 100%; border-radius: 4px; display: block; margin-bottom: 24px; background: var(--gray100); }
+
+    .post-body p {
+      font-size: .92rem; line-height: 1.75; color: var(--ink);
+      margin-bottom: 18px;
+    }
+
+    #loading { text-align: center; padding: 80px 0; display: none; }
+    .spinner {
+      width: 30px; height: 30px; margin: 0 auto;
+      border: 3px solid var(--gray200); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #error-state { display: none; text-align: center; padding: 80px 20px; color: var(--gray500); font-size: .9rem; }
+
+    footer { background: var(--ink); color: rgba(255,255,255,.55); text-align: center; padding: 14px 24px; font-size: .8rem; }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="/">TOUR<span>SPOT</span></a>
+</nav>
+
+<div class="post-wrap">
+  <a class="back-btn" href="/" aria-label="Back to blog list">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </a>
+
+  <div id="loading"><div class="spinner"></div></div>
+  <div id="error-state">Could not load this post. It may have been removed.</div>
+
+  <div id="post-content" style="display:none;">
+    <h1 class="post-title" id="post-title"></h1>
+    <div class="post-meta"><span class="tag">Blog</span> | <span id="post-date"></span></div>
+    <img class="post-image" id="post-image" alt="" />
+    <div class="post-body" id="post-body"></div>
+  </div>
+</div>
+
+<footer>Copyright</footer>
+
+<script>
+  const slug = "{{ slug|escapejs }}";
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  async function loadPost() {
+    document.getElementById('loading').style.display = 'block';
+    try {
+      const res = await fetch(`/api/blog/${encodeURIComponent(slug)}`);
+      if (!res.ok) throw new Error('Not found');
+      const b = await res.json();
+
+      document.getElementById('post-title').textContent = b.title;
+      document.getElementById('post-date').textContent = formatDate(b.date_published || b.date_created);
+      const img = document.getElementById('post-image');
+      if (b.image) { img.src = b.image; img.alt = b.title; } else { img.style.display = 'none'; }
+
+      const paragraphs = (b.description || '').split(/\n\s*\n/).filter(p => p.trim());
+      document.getElementById('post-body').innerHTML = paragraphs.map(p => `<p>${escapeHtml(p.trim())}</p>`).join('');
+
+      document.title = b.title + ' — TOURSPOT';
+      document.getElementById('post-content').style.display = 'block';
+    } catch (e) {
+      document.getElementById('error-state').style.display = 'block';
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  loadPost();
+</script>
+
+</body>
+</html>

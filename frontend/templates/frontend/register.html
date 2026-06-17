@@ -244,7 +244,7 @@
 <script>
   const API = 'http://localhost:8000/api';
  
-  if (localStorage.getItem('access_token')) window.location.href = '/';
+  if (localStorage.getItem('access_token')) window.location.href = '/dashboard/';
  
   function togglePw(inputId, btnId) {
     const inp = document.getElementById(inputId);
@@ -294,7 +294,7 @@
       if (!res.ok) throw data;
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('user_email',   data.email);
-      window.location.href = '/';
+      window.location.href = '/dashboard/';
     } catch(err) {
       const msg = err?.error || err?.detail || 'Something went wrong. Please try again.';
       showError(msg);
