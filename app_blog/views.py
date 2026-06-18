@@ -1,47 +1,44 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import Blog
 from rest_framework import generics, permissions, status
 from .serializers import BlogSerializer, BlogDeletedSerializer, BlogDraftSerializer
 
 
-# Blog Published
+# ── Blog Published ───────────────────────────────────────────────────────────
 class BlogListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Blog.objects.filter(is_deleted=False).filter(published=True)
+    queryset = Blog.objects.filter(is_deleted=False, published=True)
     serializer_class = BlogSerializer
+
 
 class BlogDeleteView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Blog.objects.filter(is_deleted=False).filter(published=True)
+    queryset = Blog.objects.filter(is_deleted=False, published=True)
     serializer_class = BlogSerializer
     lookup_field = 'slug'
 
-    def get_object(self):
-        queryset = self.get_queryset()
-        slug = self.kwargs.get('slug')
-        obj = get_object_or_404(queryset, slug=slug)
-        return obj
-
     def delete(self, request, *args, **kwargs):
         blog = self.get_object()
-        response_data = {}
-        if not blog.is_deleted:
-            blog.delete()
-            response_data['Message'] = f"{blog.title} has been moved to trash."
-            return Response(response_data, status=status.HTTP_200_OK)
+        blog.delete()  # soft delete via model's delete()
+        return Response(
+            {'message': f'"{blog.title}" has been moved to trash.'},
+            status=status.HTTP_200_OK
+        )
 
-# Blog Draft
+
+# ── Blog Draft ───────────────────────────────────────────────────────────────
 class BlogDraftView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Blog.objects.filter(is_deleted=False).filter(published=False)
+    queryset = Blog.objects.filter(is_deleted=False, published=False)
     serializer_class = BlogDraftSerializer
     lookup_field = 'slug'
 
+
 class BlogDraftRetrieveView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Blog.objects.filter(is_deleted=False).filter(published=False)
+    queryset = Blog.objects.filter(is_deleted=False, published=False)
     serializer_class = BlogDraftSerializer
     lookup_field = 'slug'
 
@@ -50,14 +47,20 @@ class BlogDraftRetrieveView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-
-        # Check if the blog is published after update
         if serializer.validated_data.get('published'):
             return Response({'message': 'This blog has been published.'}, status=status.HTTP_200_OK)
-
         return Response(serializer.data)
 
-# Blog Soft Delete
+    def delete(self, request, *args, **kwargs):
+        blog = self.get_object()
+        blog.delete()  # soft delete
+        return Response(
+            {'message': f'"{blog.title}" has been moved to trash.'},
+            status=status.HTTP_200_OK
+        )
+
+
+# ── Blog Deleted / Restore ───────────────────────────────────────────────────
 class BlogDeletedListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Blog.objects.filter(is_deleted=True)
@@ -70,15 +73,24 @@ class BlogRestoreView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BlogDeletedSerializer
     lookup_field = 'slug'
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete(hard=True)
-        message = f"data has been permanently deleted."
-        return Response({'Message': message}, status=status.HTTP_204_NO_CONTENT)
-
     def put(self, request, *args, **kwargs):
+        """Restore a soft-deleted post."""
         instance = self.get_object()
         instance.restore()
-        serializer = self.get_serializer(instance)
-        message = f"{serializer.data['title']} has been restored."
-        return Response({'Message': message})
+        return Response(
+            {'message': f'"{instance.title}" has been restored.'},
+            status=status.HTTP_200_OK
+        )
+
+    # Also handle PATCH in case DRF routes partial updates here
+    def patch(self, request, *args, **kwargs):
+        return self.put(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Permanently delete a post."""
+        instance = self.get_object()
+        instance.delete(hard=True)
+        return Response(
+            {'message': 'Post has been permanently deleted.'},
+            status=status.HTTP_200_OK  # 200 so JS can read the response body
+        )

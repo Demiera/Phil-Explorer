@@ -9,23 +9,10 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = [
-            'url',
-            'id',
-            'slug',
-            'title',
-            'image',
-            'description',
-            'date_updated',
-            'date_created',
-            'published',
-            'date_published',
+            'url', 'id', 'slug', 'title', 'image', 'description',
+            'date_updated', 'date_created', 'published', 'date_published',
         ]
-        read_only_fields = [
-            'slug',
-            'date_created',
-            'date_published',
-            'date_updated',
-        ]
+        read_only_fields = ['slug', 'date_created', 'date_published', 'date_updated']
 
 
 class BlogDraftSerializer(serializers.ModelSerializer):
@@ -35,21 +22,11 @@ class BlogDraftSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = [
-            'url',
-            'id',
-            'slug',
-            'title',
-            'image',
-            'description',
-            'published',
-            'date_created',
-            'date_published',
+            'url', 'id', 'slug', 'title', 'image', 'description',
+            'published', 'date_created', 'date_published',
         ]
-        read_only_fields = [
-            'slug',
-            'date_created',
-            'date_published',
-        ]
+        read_only_fields = ['slug', 'date_created', 'date_published']
+
 
 class BlogDeletedSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='blog-restore-deleted', lookup_field='slug')
@@ -57,20 +34,10 @@ class BlogDeletedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = [
-            'url',
-            'id',
-            'title',
-            'image',
-            'description',
-            'date_deleted',
-            'is_deleted',
+            'url', 'id', 'slug',   # slug is required by the frontend buttons
+            'title', 'image', 'description',
+            'date_deleted', 'is_deleted',
         ]
-
         read_only_fields = [
-            'url',
-            'id',
-            'title',
-            'image',
-            'description',
-            'date_deleted',
+            'url', 'id', 'slug', 'title', 'image', 'description', 'date_deleted',
         ]
