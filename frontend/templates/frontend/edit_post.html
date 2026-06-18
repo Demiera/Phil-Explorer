@@ -42,14 +42,24 @@
 <script>
   if (!localStorage.getItem('access_token')) window.location.href = '/login/';
   const SLUG = "{{ slug }}";
-  let selectedFile=null, isDraft=false;
+  const MODE = new URLSearchParams(window.location.search).get('mode'); // 'draft' | 'published' | null
+  let selectedFile = null, isDraft = (MODE === 'draft');
 
   async function loadPost() {
     try {
       let blog;
-      try { blog = await apiFetch(`/blog/${SLUG}`); isDraft=false; }
-      catch(e) {
-        blog = await apiFetch(`/blog/draft/${SLUG}`); isDraft=true;
+      if (MODE === 'draft') {
+        // Came from drafts dashboard — go straight to draft endpoint.
+        blog = await apiFetch(`/blog/draft/${SLUG}/`);
+        isDraft = true;
+      } else if (MODE === 'published') {
+        // Came from published dashboard — go straight to published endpoint.
+        blog = await apiFetch(`/blog/${SLUG}/`);
+        isDraft = false;
+      } else {
+        // Direct URL with no mode hint — probe published first, fall back to draft.
+        try { blog = await apiFetch(`/blog/${SLUG}/`); isDraft = false; }
+        catch(e) { blog = await apiFetch(`/blog/draft/${SLUG}/`); isDraft = true; }
       }
       document.getElementById('title').value = blog.title||'';
       document.getElementById('description').value = blog.description||'';
@@ -71,11 +81,14 @@
     fd.append('description',document.getElementById('description').value.trim());
     fd.append('published',publish?'true':'false');
     if(selectedFile) fd.append('image',selectedFile);
-    const endpoint = isDraft ? `/blog/draft/${SLUG}` : `/blog/${SLUG}`;
+    // A draft post always uses the draft endpoint.
+    // A published post being saved back as draft still uses the published endpoint
+    // (the object lives in that queryset until the next page load after re-classification).
+    const endpoint = isDraft ? `/blog/draft/${SLUG}/` : `/blog/${SLUG}/`;
     try{
       await apiFetch(endpoint,{method:'PATCH',body:fd,headers:{}});
       showToast(publish?'Post published!':'Saved as draft.');
-      setTimeout(()=>{window.location.href=publish?'/':'/drafts/';},800);
+      setTimeout(()=>{window.location.href=publish?'/dashboard/':'/drafts/';},800);
     }catch(e){
       btn.disabled=false;btn.textContent=orig;
       showToast(e?.data?.detail||'Could not save.','error');

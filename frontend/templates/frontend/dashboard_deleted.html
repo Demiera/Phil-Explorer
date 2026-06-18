@@ -100,13 +100,13 @@
   document.getElementById('search').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentSearch=e.target.value.trim();currentPage=1;load();},350);});
 
   async function doRestore(slug){
-    try{await apiFetch(`/blog/deleted/${slug}`,{method:'PUT'});showToast('Post restored.');load();}
+    try{await apiFetch(`/blog/deleted/${slug}/`,{method:'PUT'});showToast('Post restored.');load();}
     catch(e){showToast('Could not restore.','error');}
   }
   function askPermDelete(slug){pendingSlug=slug;openModal('perm-delete-modal');}
   async function doPermDelete(){
     if(!pendingSlug)return;
-    try{await apiFetch(`/blog/deleted/${pendingSlug}`,{method:'DELETE'});closeModal('perm-delete-modal');showToast('Post permanently deleted.');load();}
+    try{await apiFetch(`/blog/deleted/${pendingSlug}/`,{method:'DELETE'});closeModal('perm-delete-modal');showToast('Post permanently deleted.');load();}
     catch(e){showToast('Could not delete.','error');}
   }
 

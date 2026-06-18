@@ -67,7 +67,7 @@
     try {
       await apiFetch('/blog/', { method:'POST', body: fd, headers:{} });
       showToast(publish ? 'Post published!' : 'Saved as draft.');
-      setTimeout(()=>{ window.location.href = publish ? '/' : '/drafts/'; }, 800);
+      setTimeout(()=>{ window.location.href = publish ? '/dashboard/' : '/drafts/'; }, 800);
     } catch(e) {
       btn.disabled=false; btn.textContent=orig;
       const errs = e?.data || {};

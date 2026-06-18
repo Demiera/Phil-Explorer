@@ -4,6 +4,7 @@ from .models import Blog
 
 class BlogSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='blog-detail', lookup_field='slug')
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Blog
@@ -20,6 +21,7 @@ class BlogSerializer(serializers.ModelSerializer):
             'date_published',
         ]
         read_only_fields = [
+            'slug',
             'date_created',
             'date_published',
             'date_updated',
@@ -28,12 +30,14 @@ class BlogSerializer(serializers.ModelSerializer):
 
 class BlogDraftSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='blog-draft-detail', lookup_field='slug')
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Blog
         fields = [
             'url',
             'id',
+            'slug',
             'title',
             'image',
             'description',
@@ -42,6 +46,7 @@ class BlogDraftSerializer(serializers.ModelSerializer):
             'date_published',
         ]
         read_only_fields = [
+            'slug',
             'date_created',
             'date_published',
         ]

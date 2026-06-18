@@ -51,7 +51,7 @@ class BlogManager(models.Manager):
 class Blog(models.Model):
     title = models.CharField(unique=True, max_length=550, null=False)
     slug = models.SlugField(unique=True, max_length=255, null=False)
-    image = models.ImageField(null=False, validators=[validate_image_size])
+    image = models.ImageField(null=True, blank=True, validators=[validate_image_size])
     description = models.TextField(null=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)

@@ -389,7 +389,7 @@
 <footer>Copyright</footer>
 
 <script>
-  const API = 'http://localhost:8000/api';
+  const API = '/api';
 
   /* ── Auth ── */
   function getToken() { return localStorage.getItem('access_token'); }
@@ -471,7 +471,12 @@
     }
 
     const res = await fetch(API + path, { ...opts, headers });
-    if (res.status === 401) { window.location.href = '/login/'; return; }
+    if (res.status === 401) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_email');
+      window.location.href = '/login/';
+      return;
+    }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw { status: res.status, data };
     return data;
@@ -483,4 +488,4 @@
 
 {% block extra_scripts %}{% endblock %}
 </body>
-</html> 
+</html>

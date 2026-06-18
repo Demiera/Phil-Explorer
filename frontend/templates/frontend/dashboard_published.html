@@ -104,7 +104,7 @@
     const offset = (currentPage - 1) * PAGE_SIZE;
     const q = currentSearch ? `&q=${encodeURIComponent(currentSearch)}` : '';
     try {
-      const data = await apiFetch(`/blog/search/?filter=${currentFilter}${q}&limit=${PAGE_SIZE}&offset=${offset}`);
+      const data = await apiFetch(`/blog/search/?filter=${currentFilter}&published=true${q}&limit=${PAGE_SIZE}&offset=${offset}`);
       const blogs = data.results || data;
       const total = data.count ?? blogs.length;
       totalPages = Math.ceil(total / PAGE_SIZE);
@@ -126,7 +126,7 @@
           <td>${b.title}</td>
           <td>${d}</td>
           <td>
-            <a href="/edit/${b.slug}/" class="action-link blue">
+            <a href="/edit/${b.slug}/?mode=published" class="action-link blue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Update
             </a>
@@ -165,7 +165,7 @@
   async function doDelete() {
     if (!pendingSlug) return;
     try {
-      await apiFetch(`/blog/${pendingSlug}`, { method: 'DELETE' });
+      await apiFetch(`/blog/${pendingSlug}/`, { method: 'DELETE' });
       closeModal('delete-modal');
       showToast('Post moved to trash.');
       load();
