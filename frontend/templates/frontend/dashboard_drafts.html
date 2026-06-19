@@ -10,7 +10,7 @@
 
 {% block content %}
 
-<!-- Empty State (shown when 0 drafts) -->
+<!-- Empty State -->
 <div id="empty-state" class="empty-state" style="display:none;">
   <h2>NO DRAFTS YET!</h2>
   <div style="margin: 28px auto; max-width: 220px;">
@@ -22,10 +22,6 @@
       <rect x="110" y="10" width="60" height="80" rx="6" fill="#D1D5DB"/>
       <rect x="120" y="25" width="40" height="7" rx="3" fill="#9CA3AF"/>
       <rect x="120" y="38" width="30" height="5" rx="3" fill="#E5E7EB"/>
-      <circle cx="130" cy="58" r="12" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="2"/>
-      <line x1="126" y1="58" x2="130" y2="54" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/>
-      <line x1="130" y1="54" x2="134" y2="58" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/>
-      <!-- Person -->
       <circle cx="75" cy="80" r="14" fill="#374151"/>
       <rect x="58" y="94" width="34" height="50" rx="6" fill="#374151"/>
       <rect x="42" y="96" width="18" height="8" rx="4" fill="#374151"/>
@@ -87,6 +83,7 @@
       </svg>
     </div>
     <h3>Are you sure you want to delete this draft?</h3>
+    <p style="font-size:.83rem;color:#6B7280;margin-bottom:8px;">It will be moved to the trash.</p>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('delete-modal')">CANCEL</button>
       <button class="btn btn-danger" onclick="doDelete()">DELETE</button>
@@ -175,7 +172,7 @@
     try {
       await apiFetch(`/blog/draft/${pendingSlug}/`, { method: 'DELETE' });
       closeModal('delete-modal');
-      showToast('Draft deleted.');
+      showToast('Draft moved to trash.');
       load();
     } catch (e) {
       showToast('Could not delete draft.', 'error');

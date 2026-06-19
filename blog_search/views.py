@@ -39,7 +39,6 @@ class BlogSearchPagination(PageNumberPagination):
 
 
 class SearchListBlog(generics.ListAPIView):
-    # Override the global IsAuthenticated default from settings.py
     permission_classes = [BlogSearchPermission]
     pagination_class   = BlogSearchPagination
 
@@ -56,25 +55,29 @@ class SearchListBlog(generics.ListAPIView):
         q         = self.request.GET.get('q', '').strip()
         date_by   = self.request.GET.get('filter', 'latest')
         published = self.request.GET.get('published')
-        deleted   = self.request.GET.get('deleted', 'false')
+        deleted   = self.request.GET.get('deleted', 'false').lower()
+        is_authed = self.request.user.is_authenticated
 
-        # Base queryset
-        if self.request.user.is_authenticated and deleted == 'true':
+        # ── Deleted view: show ALL deleted posts regardless of published state ──
+        if is_authed and deleted == 'true':
             qs = Blog.objects.filter(is_deleted=True)
+            # Note: published filter intentionally NOT applied here —
+            # a deleted draft and a deleted published post both belong in Trash.
+
         else:
             qs = Blog.objects.filter(is_deleted=False)
 
-        # Published filter
-        if self.request.user.is_authenticated and published is not None:
-            qs = qs.filter(published=(published.lower() == 'true'))
-        else:
-            qs = qs.filter(published=True)
+            if is_authed and published is not None:
+                qs = qs.filter(published=(published.lower() == 'true'))
+            else:
+                # Default: only published posts for unauthenticated visitors
+                qs = qs.filter(published=True)
 
-        # Search
+        # ── Search ──
         if q:
             qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q))
 
-        # Ordering
+        # ── Ordering ──
         qs = qs.order_by('date_created' if date_by == 'oldest' else '-date_created')
 
         return qs
